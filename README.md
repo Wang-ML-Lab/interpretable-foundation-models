@@ -1,7 +1,7 @@
 # Interpretable Foundation Models
 This repo contains the code and data for our ICML 2024 paper:
 
-**Multimodal Needle in a Haystack: Benchmarking Long-Context Capability of Multimodal LLMs**<br>
+**Probabilistic Conceptual Explainers: Trustworthy Conceptual Explanations for Vision Foundation Models**<br>
 Hengyi Wang, Shiwei Tan, Hao Wang<br>
 [[Paper](https://arxiv.org/abs/2406.12649)] [[Poster](https://icml.cc/virtual/2024/poster/34650)]
 
