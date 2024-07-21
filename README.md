@@ -1,4 +1,3 @@
-# Interpretable Foundation Models
 This repo contains the code and data for our ICML 2024 paper:
 
 **Probabilistic Conceptual Explainers: Trustworthy Conceptual Explanations for Vision Foundation Models**<br>
