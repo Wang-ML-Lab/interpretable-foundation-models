@@ -33,14 +33,12 @@ python main.py  --task Color --name ViT-PACE --num_epochs 1
 ## Reference
 
 ```bib
-@misc{wang2024probabilistic,
+@inproceedings{PACE,
   title={Probabilistic Conceptual Explainers: Trustworthy Conceptual Explanations for Vision Foundation Models},
   author={Hengyi Wang and
           Shiwei Tan and
           Hao Wang},
-  year={2024},
-  eprint={2406.12649},
-  archivePrefix={arXiv},
-  primaryClass={cs.LG}
+  booktitle={International Conference on Machine Learning},
+  year={2024}
 }
 ```
