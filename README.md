@@ -3,7 +3,7 @@ This repo contains the code and data for our ICML 2024 paper:
 
 **Probabilistic Conceptual Explainers: Trustworthy Conceptual Explanations for Vision Foundation Models**<br>
 Hengyi Wang, Shiwei Tan, Hao Wang<br>
-[[Paper](wanghao.in/paper/ICML24_PACE.pdf)] [[ICML Website](https://icml.cc/virtual/2024/poster/34650)]
+[[Paper](http://www.wanghao.in/paper/ICML24_PACE.pdf)] [[ICML Website](https://icml.cc/virtual/2024/poster/34650)]
 
 ## Installation
 conda env create -f environment_PACE.yml
