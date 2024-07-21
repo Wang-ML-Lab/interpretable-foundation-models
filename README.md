@@ -1,4 +1,4 @@
-# interpretable-foundation-models
+# Interpretable Foundation Models
 This repo contains the code and data for our ICML 2024 paper:
 
 **Multimodal Needle in a Haystack: Benchmarking Long-Context Capability of Multimodal LLMs**<br>
