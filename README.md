@@ -6,28 +6,28 @@ Hengyi Wang, Shiwei Tan, Hao Wang<br>
 [[Paper](http://www.wanghao.in/paper/ICML24_PACE.pdf)] [[ICML Website](https://icml.cc/virtual/2024/poster/34650)]
 
 ## Installation
+```bash
 conda env create -f environment_PACE.yml
-
 conda activate PACE
-
 cd src
+```
 
 ## Generate the *Color* Dataset 
-
+```bash
 python generate_data.py
-
+```
 ## Finetune ViT for the *Color* Dataset
-
+```bash
 python main.py --train  --task Color --name ViT-base --num_epochs 5 --lr 1e-3 --require_grad
-
+```
 ## Train PACE for the *Color* Dataset
-
+```bash
 python main.py --train  --task Color --name ViT-PACE --num_epochs 1
-
+```
 ## Test PACE for the *Color* Dataset
-
+```bash
 python main.py  --task Color --name ViT-PACE --num_epochs 1
-
+```
 
 
 ## Reference
