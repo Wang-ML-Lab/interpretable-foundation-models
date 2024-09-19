@@ -5,6 +5,12 @@ This repo contains the code and data for our ICML 2024 paper:
 Hengyi Wang, Shiwei Tan, Hao Wang<br>
 [[Paper](http://www.wanghao.in/paper/ICML24_PACE.pdf)] [[ICML Website](https://icml.cc/virtual/2024/poster/34650)]
 
+![More_Random_Samples_Color](https://github.com/user-attachments/assets/f39aa0c6-3427-428e-ada9-aa9880d0ca09)
+
+![More_Random_Samples_Flower](https://github.com/user-attachments/assets/80bd9dcf-2514-49ca-a659-6b101d423044)
+
+
+
 ## Installation
 ```bash
 conda env create -f environment_PACE.yml
