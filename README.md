@@ -12,9 +12,15 @@ and our VALC (EMNLP 2024 Findings paper):
 
 ## Probabilistic Conceptual Explainers (PACE) for Vision Transformers
 
+Below are some sample concepts automatically discovered by our PACE, *without the need for concept annotation during training*. 
+
 ![More_Random_Samples_Color](https://github.com/user-attachments/assets/f39aa0c6-3427-428e-ada9-aa9880d0ca09)
 
+Concepts discovered by PACE in the *COLOR* dataset. See Figure 3 of [our paper](http://wanghao.in/paper/ICML24_PACE.pdf) for details on the *COLOR* dataset.
+
 ![More_Random_Samples_Flower](https://github.com/user-attachments/assets/80bd9dcf-2514-49ca-a659-6b101d423044)
+
+Concepts discovered by PACE in the *Oxford Flower* dataset. 
 
 
 
