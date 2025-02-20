@@ -47,8 +47,18 @@ from torch.utils.data import random_split
 
 args = parser.parse_args() 
 
+#print("args", args)
 
-args.save_path = os.path.join(args.save_path, args.name)
+args.save_path = os.path.normpath(os.path.join(args.save_path, args.name)) # adjusts to windows or linux
+
+# create the directory if it doesn't exist
+if not os.path.exists(args.save_path):
+    print(f"❌ Directory does not exist: {args.save_path}")
+    os.makedirs(args.save_path, exist_ok=True) 
+    print(f"✅ Created directory: {args.save_path}")
+
+# Windows: ..\ckpt\ViT-base
+# Linux/macOS: ../ckpt/ViT-base
 
 np.random.seed(args.seed)   
 torch.manual_seed(args.seed)
