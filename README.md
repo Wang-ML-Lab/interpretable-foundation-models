@@ -2,12 +2,13 @@
 This repo contains the code and data for our PACE (ICML 2024 paper):
 
 **Probabilistic Conceptual Explainers: Trustworthy Conceptual Explanations for Vision Foundation Models**<br>
-Hengyi Wang, Shiwei Tan, Hao Wang<br>
+Hengyi Wang*, Shiwei Tan*, Hao Wang<br>
 [[Paper](http://www.wanghao.in/paper/ICML24_PACE.pdf)] [[ICML Website](https://icml.cc/virtual/2024/poster/34650)]
 
 and our VALC (EMNLP 2024 Findings paper):
 
 **Variational Language Concepts for Interpreting Foundation Language Models**<br>
+Hengyi Wang, Shiwei Tan, Zhiqing Hong, Desheng Zhang, Hao Wang<br>
 [[Paper](http://www.wanghao.in/paper/EMNLP24_VALC.pdf)] [[ACL Website](https://aclanthology.org/2024.findings-emnlp.505/)]
 
 ## Probabilistic Conceptual Explainers (PACE) for Vision Transformers
