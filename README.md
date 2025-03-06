@@ -11,7 +11,7 @@ and our VALC (EMNLP 2024 Findings paper):
 Hengyi Wang, Shiwei Tan, Zhiqing Hong, Desheng Zhang, Hao Wang<br>
 [[Paper](http://www.wanghao.in/paper/EMNLP24_VALC.pdf)] [[ACL Website](https://aclanthology.org/2024.findings-emnlp.505/)]
 
-## Probabilistic Conceptual Explainers (PACE) for Vision Transformers
+## Probabilistic Conceptual Explainers (PACE) for Vision Transformers (ViTs)
 
 Below are some sample concepts automatically discovered by our PACE, *without the need for concept annotation during training*. 
 
