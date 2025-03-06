@@ -11,6 +11,9 @@ and our VALC (EMNLP 2024 Findings paper):
 Hengyi Wang, Shiwei Tan, Zhiqing Hong, Desheng Zhang, Hao Wang<br>
 [[Paper](http://www.wanghao.in/paper/EMNLP24_VALC.pdf)] [[ACL Website](https://aclanthology.org/2024.findings-emnlp.505/)]
 
+## Brief Introduction for PACE
+We propose five desiderata for explaining vision foundation models like ViTs - faithfulness, stability, sparsity, multi-level structure, and parsimony - and demonstrate the inadequacy of current methods in meeting these criteria comprehensively. Rather than using sparse autoencoders (SAEs), we introduce a variational Bayesian explanation framework, dubbed ProbAbilistic Concept Explainers (PACE), which models the distributions of patch embeddings to provide trustworthy post-hoc conceptual explanations. Our PACE can provide dataset-, image-, and patch-level explanations for ViTs and achieves all five desiderata (faithfulness, stability, sparsity, multi-level structure, and parsimony) in a unified framework. 
+
 ## Probabilistic Conceptual Explainers (PACE) for Vision Transformers (ViTs)
 
 Below are some sample concepts automatically discovered by our PACE, *without the need for concept annotation during training*. 
