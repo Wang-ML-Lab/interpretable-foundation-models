@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=0 python main.py  --task Color --name ViT-PACE --num_epochs 1

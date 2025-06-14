@@ -274,14 +274,60 @@ if PACE is not None:
         # explain ViT
         print('PACE is explaining ViT...')
         for i, inputs in enumerate(test_set):
-
             test_encodings = inputs['encodings'].cuda()
             test_labels = inputs['labels'].cuda()
             logits, states, att = model(test_encodings)
 
             # infer phi and gamma
             gamma, phi = PACE.do_e_step(states, att[args.layer + 1])
-
             # infer E[log(theta)], which is the expectation of log(theta)
             E_log_theta = dirichlet_expectation(gamma)
+
+            # Normalize gamma so each row sums to 1
+            gamma = gamma / gamma.sum(axis=1, keepdims=True)
+
+            # Collect images and gamma and then plot them
+            num_to_plot = 10
+            if i == 0:
+                images_to_plot = []
+                gammas_to_plot = []
+                plotted = False
+
+            # Get the original images (before transform) for this batch
+            start_idx = i * args.eval_batch_size
+            end_idx = start_idx + test_encodings.shape[0]
+            original_images = test_images[start_idx:end_idx]
+
+            # Move gamma to CPU and convert to numpy if it's a tensor
+            if isinstance(gamma, torch.Tensor):
+                gamma_np = gamma.detach().cpu().numpy()
+            else:
+                gamma_np = gamma
+
+            for img, g in zip(original_images, gamma_np):
+                if len(images_to_plot) < num_to_plot:
+                    images_to_plot.append(img)
+                    gammas_to_plot.append(g)
+                else:
+                    break
+
+            # After the loop, plot the first num_to_plot images and their gamma
+            if len(images_to_plot) >= num_to_plot and not plotted:
+                print(f'plotting the first {num_to_plot} images and their normalized gamma, i.e., the image-level explanation theta...')
+                fig, axes = plt.subplots(num_to_plot, 2, figsize=(8, 4 * num_to_plot))
+                for idx in range(num_to_plot):
+                    # Show image
+                    axes[idx, 0].imshow(images_to_plot[idx])
+                    axes[idx, 0].axis('off')
+                    axes[idx, 0].set_title(f"Test Image {idx+1}")
+                    # Show gamma as bar plot
+                    axes[idx, 1].bar(np.arange(len(gammas_to_plot[idx])), gammas_to_plot[idx])
+                    axes[idx, 1].set_title(f"Gamma {idx+1}")
+                plt.tight_layout()
+                plt.savefig('gamma_test_images.pdf')
+                print('plotting done')
+                plotted = True
+                # plt.show()
+
+
 
