@@ -98,7 +98,7 @@ class MyEarlyStoppingCallback(EarlyStoppingCallback):
 
 class PACETrainer(Trainer):
 
-    def compute_loss(self,model,inputs,return_outputs=False): # **args...
+    def compute_loss(self,model,inputs,return_outputs=False, **kwargs): # **args...
         #output = model(inputs['encodings'])  # get predict outputs and last word embeddings
         logits, states, att = model(inputs['encodings']) 
         image_trans = image_augment(inputs['encodings'])
@@ -229,7 +229,7 @@ training_args = TrainingArguments(
     seed = args.seed,
     load_best_model_at_end=True,
     metric_for_best_model=args.metric, # 'eval_matthews_correlation' for cola, etc.
-    evaluation_strategy='epoch',
+    eval_strategy='epoch',
     save_strategy='epoch',
     learning_rate = args.lr,
 )
@@ -324,7 +324,7 @@ if PACE is not None:
                     axes[idx, 1].bar(np.arange(len(gammas_to_plot[idx])), gammas_to_plot[idx])
                     axes[idx, 1].set_title(f"Gamma {idx+1}")
                 plt.tight_layout()
-                plt.savefig('gamma_test_images.pdf')
+                plt.savefig(""args.save_path + '/' + args.task + '_epoch' + str(args.num_epochs) + 'gamma_test_images.pdf')
                 print('plotting done')
                 plotted = True
                 # plt.show()
