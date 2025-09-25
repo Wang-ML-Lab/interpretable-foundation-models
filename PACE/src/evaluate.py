@@ -73,7 +73,7 @@ def stability(concept_orig, concept_aug, compute=True):
 
 def sparsity(concept):
     assert len(concept.shape) == 2
-    eps = 0.1 / concept.shape[1] 
+    eps = 0.1 / concept.shape[1]
     return np.mean(concept < eps)
 
 def parsimony(concept):

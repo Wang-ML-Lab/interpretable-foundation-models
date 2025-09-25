@@ -31,6 +31,7 @@ from config import parser
 import torchvision.transforms as transforms
 import torchvision
 from utils import accuracy_score, dirichlet_expectation, read_tsv_file, compute_metrics, Adam, posterior_mu_sigma
+from utils import Cub2011, StanfordCars, MyImageDatasetFromStanfordCars, build_transform, load_dataset_by_task
 from model import PACE, ViTClassify
 from torchviz import make_dot
 from utils import dirichlet_expectation
@@ -90,15 +91,15 @@ class MyEarlyStoppingCallback(EarlyStoppingCallback):
 
         # save model
         args = self.args
-        torch.save(model.state_dict(), args.save_path +'/' + args.task + '_' +'epoch'+str(self.epochs)+'.pt')
-        np.save(args.save_path+'/' + args.task + '_'+'mus-epoch'+str(self.epochs) +'.npy',PACE._mus)
-        np.save(args.save_path+'/' + args.task + '_' +'sigmas-epoch'+str(self.epochs)+'.npy',PACE._sigmas)
-        np.save(args.save_path+'/' + args.task + '_'+'eta-epoch'+str(self.epochs)+'.npy',PACE._eta)
+        torch.save(model.state_dict(), args.save_path +'/' + args.task + '_epoch'+str(self.epochs)+'.pt')
+        np.save(args.save_path+'/' + args.task + '_mus-epoch'+str(self.epochs) +'.npy',PACE._mus)
+        np.save(args.save_path+'/' + args.task + '_sigmas-epoch'+str(self.epochs)+'.npy',PACE._sigmas)
+        np.save(args.save_path+'/' + args.task + '_eta-epoch'+str(self.epochs)+'.npy',PACE._eta)
 
 
 class PACETrainer(Trainer):
 
-    def compute_loss(self,model,inputs,return_outputs=False): # **args...
+    def compute_loss(self,model,inputs,return_outputs=False, **kwargs): # **args...
         #output = model(inputs['encodings'])  # get predict outputs and last word embeddings
         logits, states, att = model(inputs['encodings']) 
         image_trans = image_augment(inputs['encodings'])
@@ -157,57 +158,13 @@ transform = transforms.Compose([
 
 
 
-# Define a transformation to convert the images to PyTorch tensors
-transform = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Lambda(lambda x: x[:3, ...]),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # Normalize to range [-1,1]
-])
-
-# Load the images and labels
-dataset = []
-labels = []
-for class_dir in ['../dataset/Color/class0', '../dataset/Color/class1']:
-    for image_name in os.listdir(class_dir):
-        # Read image
-        image = Image.open(os.path.join(class_dir, image_name))
-        
-        # Add to the lists
-        dataset.append(image)
-        labels.append(int(class_dir[-1]))  # class ID from the directory name
-
-# Convert lists to tensors
-labels = torch.tensor(labels)
-
-# Split into train and test sets
-# Pair up the data and labels
-paired_data = list(zip(dataset, labels))
-
-# Perform the split on the paired data
-train_size = int(0.8 * len(paired_data))  # 80% for training
-test_size = len(paired_data) - train_size
-train_data, test_data = random_split(paired_data, [train_size, test_size])
-
-
-train_images, train_labels = zip(*train_data)
-test_images, test_labels = zip(*test_data)
-
-# Convert the zipped data back to lists or tensors as needed
-train_images = list(train_images)
-train_labels = list(train_labels)
-test_images = list(test_images)
-test_labels = list(test_labels)
-
-# Create MyImageDataset instances
-train_dataset = MyImageDataset(train_images, train_labels, transform=transform)
-test_dataset = MyImageDataset(test_images, test_labels, transform=transform)
+# Dataset loading using load_dataset_by_task function
+train_dataset, test_dataset, args.out_dim = load_dataset_by_task(args.task, args.data_path)
 val_dataset = test_dataset
-
 
 # Create data loaders for easier batch processing
 train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
-args.out_dim = 2
 
 model = ViTClassify(in_dim = args.b_dim, out_dim=args.out_dim,hid_dim=args.c_dim, layer=args.layer)
 model = model.cuda()
@@ -222,16 +179,20 @@ training_args = TrainingArguments(
     num_train_epochs=args.num_epochs,      # total number of training epochs
     per_device_train_batch_size=args.train_batch_size,  # batch size per device during training
     per_device_eval_batch_size=args.eval_batch_size,   # batch size for evaluation
-    warmup_steps=0,                # number of warmup steps for learning rate scheduler    
+    warmup_steps=500,                # number of warmup steps for learning rate scheduler
     weight_decay=args.weight_decay,               # strength of weight decay
     logging_dir='./logs',            # directory for storing logs
     logging_steps=10,
     seed = args.seed,
     load_best_model_at_end=True,
     metric_for_best_model=args.metric, # 'eval_matthews_correlation' for cola, etc.
-    evaluation_strategy='epoch',
+    eval_strategy='epoch',
     save_strategy='epoch',
     learning_rate = args.lr,
+    lr_scheduler_type='cosine',      # cosine learning rate scheduler
+    save_total_limit=3,              # limit the number of saved checkpoints
+    gradient_accumulation_steps=1,   # gradient accumulation steps
+    fp16=True,                       # use mixed precision training to accelerate
 )
 
 mycallback = MyEarlyStoppingCallback(early_stopping_patience=10, args=args)
@@ -254,22 +215,22 @@ print('eval size', len(val_dataset))
 if args.train:
     print('training...')
     if not args.require_grad: # Train PACE, otherwise train ViT      
-        model.load_state_dict(torch.load('../ckpt/ViT-base' +'/' + args.task + '_' +'epoch5'+'.pt'))
+        model.load_state_dict(torch.load('../ckpt/ViT-base' +'/' + args.task + '_epoch' + args.pretrain_epoch +'.pt'))
     trainer.train()
-    torch.save(model.state_dict(), args.save_path +'/' + args.task + '_' +'epoch'+str(args.num_epochs)+'.pt')
+    torch.save(model.state_dict(), args.save_path +'/' + args.task + '_epoch'+str(args.num_epochs)+'.pt')
 else:
     print('evaluating...')
-    model.load_state_dict(torch.load(args.save_path +'/' + args.task + '_' +'epoch'+str(args.num_epochs)+'.pt'))
+    model.load_state_dict(torch.load(args.save_path +'/' + args.task + '_epoch'+str(args.num_epochs)+'.pt'))
  
 if PACE is not None:
     if args.train:
-        np.save(args.save_path+'/' + args.task + '_'+'mus-epoch'+str(args.num_epochs)+'.npy',PACE._mus)
-        np.save(args.save_path+'/' + args.task + '_' +'sigmas-epoch'+str(args.num_epochs)+'.npy',PACE._sigmas)
-        np.save(args.save_path+'/' + args.task + '_'+'eta-epoch'+str(args.num_epochs)+'.npy',PACE._eta)
+        np.save(args.save_path+'/' + args.task + '_mus-epoch'+str(args.num_epochs)+'.npy',PACE._mus)
+        np.save(args.save_path+'/' + args.task + '_sigmas-epoch'+str(args.num_epochs)+'.npy',PACE._sigmas)
+        np.save(args.save_path+'/' + args.task + '_eta-epoch'+str(args.num_epochs)+'.npy',PACE._eta)
     else:
-        PACE._mus = np.load(args.save_path+'/' + args.task + '_'+'mus-epoch'+str(args.num_epochs)+'.npy')
-        PACE._sigmas = np.load(args.save_path+'/' + args.task + '_' +'sigmas-epoch'+str(args.num_epochs)+'.npy')
-        PACE._eta = np.load(args.save_path+'/' + args.task + '_'+'eta-epoch'+str(args.num_epochs)+'.npy')
+        PACE._mus = np.load(args.save_path+'/' + args.task + '_mus-epoch'+str(args.num_epochs)+'.npy')
+        PACE._sigmas = np.load(args.save_path+'/' + args.task + '_sigmas-epoch'+str(args.num_epochs)+'.npy')
+        PACE._eta = np.load(args.save_path+'/' + args.task + '_eta-epoch'+str(args.num_epochs)+'.npy')
 
         # explain ViT
         print('PACE is explaining ViT...')
@@ -296,6 +257,8 @@ if PACE is not None:
             # Get the original images (before transform) for this batch
             start_idx = i * args.eval_batch_size
             end_idx = start_idx + test_encodings.shape[0]
+            # from dataset to original images
+            test_images = dataset['train']['image']
             original_images = test_images[start_idx:end_idx]
 
             # Move gamma to CPU and convert to numpy if it's a tensor
@@ -324,10 +287,7 @@ if PACE is not None:
                     axes[idx, 1].bar(np.arange(len(gammas_to_plot[idx])), gammas_to_plot[idx])
                     axes[idx, 1].set_title(f"Gamma {idx+1}")
                 plt.tight_layout()
-                plt.savefig('gamma_test_images.pdf')
+                plt.savefig(args.save_path + '/' + args.task + '_epoch' + str(args.num_epochs) + 'gamma_test_images.pdf')
                 print('plotting done')
                 plotted = True
                 # plt.show()
-
-
-

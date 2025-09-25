@@ -40,32 +40,19 @@ cd src
 ```bash
 python generate_data.py
 ```
-### Finetune ViT for the *Color* Dataset
-```bash
-python main.py --train  --task Color --name ViT-base --num_epochs 5 --lr 1e-3 --require_grad
+### Finetune ViT for Color Dataset and Real-World Datasets
 ```
-
-### Finetune ViT for the Real-World Datasets
-```bash
-python main.py --train --task flower102 --name bert-base --lr 3e-5 --train_batch_size 16 --require_grad
+bash ./train_ViT.sh
 ```
-
-```bash
-python main.py --train --task cub2011 --name bert-base --lr 1e-4 --require_grad --train_batch_size 16
-```
-
-```bash
-python main.py --train --task cars --name bert-base --lr 1e-4 --require_grad
-```
-
 
 ### Train PACE for Each Dataset
 ```bash
-python main.py --train  --task $Dataset --name ViT-PACE --num_epochs 1
+bash ./train_PACE.sh
 ```
+
 ### Test PACE for Each Dataset
 ```bash
-python main.py  --task $Dataset --name ViT-PACE --num_epochs 1
+bash ./eval_PACE.sh
 ```
 
 
