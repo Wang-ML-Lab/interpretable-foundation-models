@@ -33,6 +33,7 @@ parser.add_argument('--lr', type=float, help='learning rate', default=3e-5)
 parser.add_argument('--weight_decay', type=float, help='weight decay', default=0.05)
 parser.add_argument('--train', action='store_true', default=False)
 parser.add_argument('--require_grad', action='store_true', default=False)
+parser.add_argument('--pretrain_epoch', type=str, help='loading pretrain epoch', default='5')
 
 # optimization args
 parser.add_argument('--num_epochs', type=int, help='number of epoches',default=10)
@@ -41,7 +42,9 @@ parser.add_argument('--eval_batch_size', type=int, help='eval sz',default=64)
 parser.add_argument('--metric', type=str, help='eval metric',default='eval_accuracy')           
               
 
+# for quantitative theta
+parser.add_argument('--load_concepts', action='store_true', default=False, 
+                    help='load concepts and probabilities from saved path instead of inferring them')
 
-
-
+    
     

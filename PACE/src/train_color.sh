@@ -1,1 +1,0 @@
-CUDA_VISIBLE_DEVICES=0 python main.py --train  --task Color --name ViT-base --num_epochs 5 --lr 1e-3 --require_grad

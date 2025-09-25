@@ -9,7 +9,9 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 from datasets import load_metric
 from config import parser
-from transformers import ViTFeatureExtractor
+from transformers import ViTFeatureExtractor, ViTImageProcessor
+from datasets import load_dataset
+from torch.utils.data import random_split
 from torchvision.transforms import (CenterCrop, 
                                     Compose, 
                                     Normalize, 
@@ -40,7 +42,7 @@ from PIL import Image, ImageOps
 
 
 def attention_norm(attention, a=1):
-    attention = attention.mean(1)
+    # attention = attention.mean(1)
     # max(attention, 0)
     #attention = torch.max(attention, torch.zeros_like(attention))
     attention = attention - attention.min()
@@ -983,6 +985,125 @@ def softmax(x): # 2D
     return e_x / e_x.sum(axis=-1, keepdims=True)
     
 
+def ensure_rgb_image(image):
+    """Ensure image is in RGB format"""
+    if hasattr(image, 'mode'):
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+    return image
+
+
+def load_dataset_by_task(task, data_path):
+    """
+    Load dataset based on task name
+    Args:
+        task: task name ('flower102', 'cub2011', 'cars', 'Color')
+        data_path: path to dataset
+    Returns:
+        train_dataset, test_dataset, out_dim
+    """
+    img_size = (224, 224)
+    
+    if task == 'flower102':
+        dataset_name = "nelorth/oxford-flowers"
+        dataset = load_dataset(dataset_name)
+
+        # ensure the image is in RGB format
+        train_images = [ensure_rgb_image(img) for img in dataset['train']['image']]
+        test_images = [ensure_rgb_image(img) for img in dataset['test']['image']]
+        
+        processor = ViTImageProcessor.from_pretrained("google/vit-base-patch16-224-in21k")
+        train_inputs = processor(train_images, return_tensors="pt")
+        test_inputs = processor(test_images, return_tensors="pt")
+        train_dataset = MyImageDataset(train_inputs['pixel_values'], dataset['train']['label'])
+        test_dataset = MyImageDataset(test_inputs['pixel_values'], dataset['test']['label'])
+        out_dim = 102
+
+    elif task == 'cub2011':
+        dataset_name = "Donghyun99/CUB-200-2011"
+        dataset = load_dataset(dataset_name)
+        
+        # ensure the image is in RGB format
+        train_images = [ensure_rgb_image(img) for img in dataset['train']['image']]
+        test_images = [ensure_rgb_image(img) for img in dataset['test']['image']]
+        
+        # use the same processor to ensure consistency
+        processor = ViTImageProcessor.from_pretrained("google/vit-base-patch16-224-in21k")
+        train_inputs = processor(train_images, return_tensors="pt")
+        test_inputs = processor(test_images, return_tensors="pt")
+        train_dataset = MyImageDataset(train_inputs['pixel_values'], dataset['train']['label'])
+        test_dataset = MyImageDataset(test_inputs['pixel_values'], dataset['test']['label'])
+        out_dim = 200
+
+    elif task == 'cars':
+        dataset_name = "tanganke/stanford_cars"
+        dataset = load_dataset(dataset_name)
+        
+        # ensure the image is in RGB format
+        train_images = [ensure_rgb_image(img) for img in dataset['train']['image']]
+        test_images = [ensure_rgb_image(img) for img in dataset['test']['image']]
+        
+        # use the same processor to ensure consistency
+        processor = ViTImageProcessor.from_pretrained("google/vit-base-patch16-224-in21k")
+        train_inputs = processor(train_images, return_tensors="pt")
+        test_inputs = processor(test_images, return_tensors="pt")
+        train_dataset = MyImageDataset(train_inputs['pixel_values'], dataset['train']['label'])
+        test_dataset = MyImageDataset(test_inputs['pixel_values'], dataset['test']['label'])
+        out_dim = 196
+        
+    elif task == 'Color':
+        # Define a transformation to convert the images to PyTorch tensors
+        transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Lambda(lambda x: x[:3, ...]),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # Normalize to range [-1,1]
+        ])
+
+        # Load the images and labels
+        dataset = []
+        labels = []
+        for class_dir in [os.path.join(data_path, 'Color/class0'), 
+                         os.path.join(data_path, 'Color/class1')]:
+            if os.path.exists(class_dir):
+                for image_name in os.listdir(class_dir):
+                    # Read image
+                    image = Image.open(os.path.join(class_dir, image_name))
+                    # Add to the lists
+                    dataset.append(image)
+                    labels.append(int(class_dir[-1]))  # class ID from the directory name
+
+        # Convert lists to tensors
+        labels = torch.tensor(labels)
+
+        # Split into train and test sets
+        # Pair up the data and labels
+        paired_data = list(zip(dataset, labels))
+
+        # Perform the split on the paired data
+        train_size = int(0.8 * len(paired_data))  # 80% for training
+        test_size = len(paired_data) - train_size
+        train_data, test_data = random_split(paired_data, [train_size, test_size])
+
+        train_images, train_labels = zip(*train_data)
+        test_images, test_labels = zip(*test_data)
+
+        # Convert the zipped data back to lists or tensors as needed
+        train_images = list(train_images)
+        train_labels = list(train_labels)
+        test_images = list(test_images)
+        test_labels = list(test_labels)
+
+        # Create MyImageDataset instances
+        train_dataset = MyImageDataset(train_images, train_labels, transform=transform)
+        test_dataset = MyImageDataset(test_images, test_labels, transform=transform)
+        out_dim = 2
+        
+    else:
+        raise ValueError(f"Unsupported task: {task}")
+    
+    return train_dataset, test_dataset, out_dim
+
+
 '''
 def row_norms(X, squared=False):
     """Row-wise (squared) Euclidean norm of X.
@@ -1147,5 +1268,7 @@ def _kmeans_plusplus(X, n_clusters, x_squared_norms, random_state, n_local_trial
         indices[c] = best_candidate
 
     return centers, indices
+
+
 
 '''
